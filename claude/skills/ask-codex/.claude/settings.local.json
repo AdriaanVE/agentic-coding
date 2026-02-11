@@ -1,0 +1,15 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(codex exec:*)",
+      "Bash(python3:*)",
+      "Bash(which codex:*)",
+      "Bash(CODEX_OUT=:*)",
+      "Bash(rm -f /tmp/codex-output:*)",
+      "Bash(wc:*)",
+      "Bash(tail:*)",
+      "Bash(cat:*)",
+      "Bash(git clone:*)"
+    ]
+  }
+}
