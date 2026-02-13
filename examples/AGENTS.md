@@ -1,3 +1,6 @@
+## Project-specific skills
+If the project has a `.claude/skills/` directory, load all skills from @.claude/skills/
+
 # Order Processing Service
 
 FastAPI backend that handles order creation, payment verification, and fulfillment tracking.

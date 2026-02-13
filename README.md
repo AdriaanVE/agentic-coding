@@ -46,3 +46,13 @@ Follow the rules in @/path/to/RULES.md
 See [`examples/`](examples/) for full examples of `CLAUDE.md` and `AGENTS.md` files.
 
 > **Note:** These configurations are starting points. Discuss them with your AI coding assistant and tailor them to your personal workflow and preferences.
+
+## Compatibility
+
+These configs are designed for **Claude Code** but are largely compatible with **[OpenCode](https://opencode.ai/)**:
+
+- **`AGENTS.md`** — Shared convention, works in both tools
+- **Skills** — OpenCode discovers skills from `.claude/skills/` directly. YAML frontmatter (`name`, `description`) is included for OpenCode compatibility; Claude Code ignores it.
+- **Commands** — Place in `.opencode/commands/` for OpenCode (same markdown format)
+
+For other tools, see [`examples/README.md`](examples/README.md).

@@ -1,0 +1,12 @@
+{
+  "permission": {
+    "bash": {
+      "*": "ask",
+      "codex exec *": "allow",
+      "which codex": "allow",
+      "CODEX_OUT=*": "allow",
+      "rm -f /tmp/codex-output*": "allow",
+      "git clone *": "allow"
+    }
+  }
+}

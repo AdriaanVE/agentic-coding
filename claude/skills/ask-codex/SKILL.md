@@ -1,3 +1,8 @@
+---
+name: ask-codex
+description: Delegate tasks to OpenAI Codex asynchronously in the background
+---
+
 # Claude Code Skill: Ask Codex
 
 Delegate a task to OpenAI Codex asynchronously. Codex runs in the background while the main conversation continues.
@@ -39,11 +44,13 @@ Default base branch for reviews: detect with `git symbolic-ref refs/remotes/orig
 
 Run the codex command directly with `run_in_background: true` and `timeout: 360000`. No tmux needed — `codex exec` is non-interactive and the background task notifies on completion.
 
-**Use a unique output file** to avoid data races when multiple Codex runs overlap. Generate one with `mktemp`:
+**You MUST create a unique output file** for each invocation to avoid data races when multiple Codex runs overlap. Use epoch seconds + PID to generate a unique filename:
 
 ```bash
-CODEX_OUT=$(mktemp /tmp/codex-output-XXXXXX.jsonl)
+CODEX_OUT="/tmp/codex-output-$(date +%s)-$$.jsonl"
 ```
+
+**Never reuse a hardcoded filename.** Always generate a fresh unique path.
 
 Redirect both stdout and stderr to the output file. Codex prints its session banner to stderr; without `2>&1` you lose it and get confusing split output.
 
@@ -105,7 +112,7 @@ User: "Ask Codex to review this branch"
 git log --oneline main..HEAD
 
 # Unique output file
-CODEX_OUT=$(mktemp /tmp/codex-output-XXXXXX.jsonl)
+CODEX_OUT="/tmp/codex-output-$(date +%s)-$$.jsonl"
 
 # Launch (run_in_background: true, timeout: 360000)
 codex exec review --base main --json > "$CODEX_OUT" 2>&1
@@ -118,7 +125,7 @@ Then: inform user, wait for notification, read JSONL, extract the last `agent_me
 User: "Ask Codex to explain the router architecture"
 
 ```bash
-CODEX_OUT=$(mktemp /tmp/codex-output-XXXXXX.jsonl)
+CODEX_OUT="/tmp/codex-output-$(date +%s)-$$.jsonl"
 codex exec --json "Explain the router architecture in this codebase." > "$CODEX_OUT" 2>&1
 ```
 
@@ -127,6 +134,6 @@ codex exec --json "Explain the router architecture in this codebase." > "$CODEX_
 User: "Have Codex add input validation to the router"
 
 ```bash
-CODEX_OUT=$(mktemp /tmp/codex-output-XXXXXX.jsonl)
+CODEX_OUT="/tmp/codex-output-$(date +%s)-$$.jsonl"
 codex exec --json "Add input validation to the router node." > "$CODEX_OUT" 2>&1
 ```
