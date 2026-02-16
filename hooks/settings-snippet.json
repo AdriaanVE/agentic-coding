@@ -1,0 +1,17 @@
+{
+  "hooks": {
+    "PermissionRequest": [
+      {
+        "matcher": "Bash|Read|Task|WebSearch|WebFetch|Grep|Glob",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "\"$HOME\"/.claude/hooks/permission-evaluator.sh",
+            "timeout": 20,
+            "statusMessage": "Evaluating permission request..."
+          }
+        ]
+      }
+    ]
+  }
+}

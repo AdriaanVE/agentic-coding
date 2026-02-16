@@ -19,7 +19,11 @@ Custom slash commands for Claude Code.
 
 ### `claude/rules/`
 
-- **RULES.md** — Behavioral guidelines for LLM coding assistants, based on [observations by Karpathy](https://github.com/forrestchang/andrej-karpathy-skills?tab=readme-ov-file). Biases toward caution, surgical changes, and simplicity.
+- **RULES.md** — Behavioral guidelines for LLM coding assistants, inspired by [observations by Karpathy](https://github.com/forrestchang/andrej-karpathy-skills?tab=readme-ov-file) with additional custom rules. Biases toward caution, surgical changes, simplicity, and honest pushback.
+
+### `hooks/`
+
+- **permission-evaluator** — AI-powered PermissionRequest hook that calls Sonnet via Azure Foundry to auto-approve safe tool calls and warn on dangerous ones. Includes a settings snippet and setup instructions.
 
 ## Usage
 
@@ -30,6 +34,7 @@ Custom slash commands for Claude Code.
 | `RULES.md` | `~/.claude/RULES.md` | Global — applies to all projects |
 | `CLAUDE.md` | `~/.claude/CLAUDE.md` (global) or repo root (project) | Global or per-project instructions for Claude Code |
 | `AGENTS.md` | Repo root (or subdirectories) | Per-project / per-module instructions for AI agents |
+| Hook scripts | `~/.claude/hooks/` | Global — hooks that run on Claude Code events |
 
 - **`~/.claude/`** — Files here are picked up globally across all projects.
 - **Repo root** — `CLAUDE.md` and `AGENTS.md` placed here apply to that specific repository.
