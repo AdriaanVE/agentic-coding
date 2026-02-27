@@ -1,0 +1,11 @@
+{
+  "permission": {
+    "bash": {
+      "*": "ask",
+      "source ~/dotenvs/claude.env*": "allow",
+      "CLAUDE_OUT=*": "allow",
+      "which claude": "allow",
+      "rm -f /tmp/claude-output*": "allow"
+    }
+  }
+}
