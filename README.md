@@ -4,22 +4,23 @@ Reusable configurations for AI-assisted coding workflows.
 
 ## Contents
 
-### `claude/skills/`
+### `agents/skills/`
 
-Custom skills for Claude Code.
+Custom skills for AI coding agents.
 
 - **ask-codex** — Delegate tasks to OpenAI Codex asynchronously. Run code reviews, ask questions, or launch implementation tasks in the background while continuing your conversation.
 - **ask-claude** — Delegate tasks to a separate Claude Code instance asynchronously. Runs `claude -p` with `stream-json` output in the background for crash-resilient JSONL capture. Designed for **OpenCode** (includes `.opencode/opencode.json` permissions); Claude Code users can use the built-in Task tool instead.
   > **Note:** This skill is configured for **Azure Foundry** deployments — it sources `~/dotenvs/claude.env` to set `CLAUDE_CODE_USE_FOUNDRY`, `ANTHROPIC_FOUNDRY_RESOURCE`, and the API key. If you use a **direct Anthropic API key**, remove the `source ~/dotenvs/claude.env 2>/dev/null` line from the SKILL.md examples; `claude -p` will use your existing auth automatically.
+- **brain** — Interact with a personal Obsidian knowledge base (`~/Brain`). Look up, create, and update notes using vault conventions and templates.
 
-### `claude/commands/`
+### `agents/commands/`
 
 Custom slash commands for Claude Code.
 
 - **git-add-commit** — Safe git commit workflow: checks branch, runs pre-commit hooks, generates a commit message, and optionally pushes.
 - **review-mr** — Review a merge request branch by diffing against `origin/main` and invoking a code-reviewer subagent.
 
-### `claude/rules/`
+### `agents/rules/`
 
 - **RULES.md** — Behavioral guidelines for LLM coding assistants, inspired by [observations by Karpathy](https://github.com/forrestchang/andrej-karpathy-skills?tab=readme-ov-file) with additional custom rules. Biases toward caution, surgical changes, simplicity, and honest pushback.
 
@@ -59,7 +60,7 @@ See [`examples/`](examples/) for full examples of `CLAUDE.md` and `AGENTS.md` fi
 These configs are designed for **Claude Code** but are largely compatible with **[OpenCode](https://opencode.ai/)**:
 
 - **`AGENTS.md`** — Shared convention, works in both tools
-- **Skills** — OpenCode discovers skills from `.claude/skills/` directly. YAML frontmatter (`name`, `description`) is included for OpenCode compatibility; Claude Code ignores it.
+- **Skills** — OpenCode discovers skills from `.claude/skills/` directly. YAML frontmatter (`name`, `description`) is included for OpenCode compatibility; Claude Code ignores it. In this repo, skills live under `agents/skills/` — symlink or copy to `.claude/skills/` as needed.
 - **Commands** — Place in `.opencode/commands/` for OpenCode (same markdown format)
 
 For other tools, see [`examples/README.md`](examples/README.md).
