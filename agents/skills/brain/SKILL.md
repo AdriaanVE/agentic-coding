@@ -57,3 +57,12 @@ Obsidian vault at `~/Brain`.
 | `idea.md` | `ideas/` | Brainfarts, explorations |
 | `project.md` | `projects/<name>/<name>.md` | New project MOC |
 | `repo.md` | `dev/repos/` | Repo reference note |
+
+## TODO
+
+`~/Brain/TODO.md` is a simple checklist for tracking tasks and action items.
+
+- Read it when asked about tasks, TODOs, or what needs doing
+- Add items with `- [ ] description`
+- Mark done with `- [x] description`
+- Keep it flat — no categories or priorities unless asked

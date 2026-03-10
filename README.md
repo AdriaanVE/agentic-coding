@@ -12,6 +12,7 @@ Custom skills for AI coding agents.
 - **ask-claude** — Delegate tasks to a separate Claude Code instance asynchronously. Runs `claude -p` with `stream-json` output in the background for crash-resilient JSONL capture. Designed for **OpenCode** (includes `.opencode/opencode.json` permissions); Claude Code users can use the built-in Task tool instead.
   > **Note:** This skill is configured for **Azure Foundry** deployments — it sources `~/dotenvs/claude.env` to set `CLAUDE_CODE_USE_FOUNDRY`, `ANTHROPIC_FOUNDRY_RESOURCE`, and the API key. If you use a **direct Anthropic API key**, remove the `source ~/dotenvs/claude.env 2>/dev/null` line from the SKILL.md examples; `claude -p` will use your existing auth automatically.
 - **brain** — Interact with a personal Obsidian knowledge base (`~/Brain`). Look up, create, and update notes using vault conventions and templates.
+- **chub** — Search and fetch up-to-date API/SDK documentation via Context Hub (`chub`) CLI. Triggers on API mentions, deprecated endpoints, and outdated SDK errors to ensure answers use the latest docs instead of stale training data.
 
 ### `agents/commands/`
 
