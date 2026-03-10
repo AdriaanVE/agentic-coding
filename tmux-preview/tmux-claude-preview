@@ -1,0 +1,39 @@
+#!/usr/bin/env -S TERMINFO=/usr/share/terminfo TERM=xterm-256color bash
+
+# Customise these to match your project layout.
+PROJECT_DIRS=(
+    "$HOME/Code"
+)
+
+tmux_cmd() {
+    TERM="xterm-256color" command tmux "$@"
+}
+
+if [[ $# -eq 1 ]]; then
+    selected=$1
+else
+    selected=$(find "${PROJECT_DIRS[@]}" -mindepth 1 -maxdepth 1 -type d | fzf)
+fi
+
+if [[ -z $selected ]]; then
+    exit 0
+fi
+
+selected_name=${selected##*/}
+selected_name=${selected_name:0:20}
+SESSION="$selected_name"
+
+if ! tmux_cmd has-session -t="$SESSION" 2>/dev/null; then
+    tmux_cmd new-session -s "$SESSION" -c "$selected" -d -x 300 -y 80
+    PREVIEW_PANE=$(tmux_cmd split-window -h -p 45 -t "$SESSION" -c "$selected" -P -F '#{pane_id}')
+    CLAUDE_PANE=$(tmux_cmd list-panes -t "$SESSION" -F '#{pane_id}' | grep -v "$PREVIEW_PANE")
+    tmux_cmd send-keys -t "$CLAUDE_PANE" "export PREVIEW_PANE=$PREVIEW_PANE" Enter
+    tmux_cmd send-keys -t "$CLAUDE_PANE" 'claude' Enter
+    tmux_cmd select-pane -t "$CLAUDE_PANE"
+fi
+
+if [[ -z $TMUX ]]; then
+    tmux_cmd attach -t "$SESSION"
+else
+    tmux_cmd switch-client -t "$SESSION"
+fi

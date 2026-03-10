@@ -13,6 +13,11 @@ Custom skills for AI coding agents.
   > **Note:** This skill is configured for **Azure Foundry** deployments — it sources `~/dotenvs/claude.env` to set `CLAUDE_CODE_USE_FOUNDRY`, `ANTHROPIC_FOUNDRY_RESOURCE`, and the API key. If you use a **direct Anthropic API key**, remove the `source ~/dotenvs/claude.env 2>/dev/null` line from the SKILL.md examples; `claude -p` will use your existing auth automatically.
 - **brain** — Interact with a personal Obsidian knowledge base (`~/Brain`). Look up, create, and update notes using vault conventions and templates.
 - **chub** — Search and fetch up-to-date API/SDK documentation via Context Hub (`chub`) CLI. Triggers on API mentions, deprecated endpoints, and outdated SDK errors to ensure answers use the latest docs instead of stale training data.
+- **preview** — Send files or diffs to a tmux preview pane. Automatically shows `git diff` after edits and renders `.md`, `.docx`, `.xlsx`, `.pdf`, `.pptx` files. See [`tmux-preview/`](tmux-preview/) for the full setup.
+
+### `tmux-preview/`
+
+A tmux workflow that pairs Claude Code with a live preview pane. Claude works on the left, diffs and document previews render on the right. Includes the `tmux-claude-preview` launcher, a `preview` script (markitdown + glow), keyboard shortcuts, and auto-allow permission patterns. See the [tmux-preview README](tmux-preview/README.md) for details.
 
 ### `agents/commands/`
 
