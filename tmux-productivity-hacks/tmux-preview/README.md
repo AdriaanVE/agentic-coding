@@ -52,7 +52,7 @@ chmod +x ~/.local/bin/tmux-claude-preview ~/.local/bin/preview
 
 ### 2. Install the Claude Code skill
 
-Copy `../agents/skills/preview/` to `~/.claude/skills/preview/`.
+Copy `../../agents/skills/preview/` to `~/.claude/skills/preview/`.
 
 ### 3. Add the CLAUDE.md instruction
 
