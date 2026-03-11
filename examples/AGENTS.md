@@ -1,3 +1,16 @@
+## Code editing
+- Always read every file in full before editing it. Never edit based on assumptions about file contents.
+
+## Git
+- NEVER put AI agents as co-author in commits, pull requests, or merge requests
+- No emojis in commits, issues, PR comments, or code
+- NEVER use `git add -A` or `git add .` — always `git add <specific-file-paths>` for files you changed
+- Track which files you created/modified/deleted during the session — only stage those
+- NEVER run `git reset --hard`, `git checkout .`, `git clean -fd`, or `git stash` without explicit user approval — these destroy uncommitted work from other agents
+- If rebase conflicts occur in files you didn't modify, abort and ask the user
+- For multi-line issue/PR/MR comments, write to a temp file and pass via file flag (e.g. `gh issue comment --body-file`, `glab mr comment --body-file`). Never pass multi-line markdown via `--body` in shell.
+- Preview the exact comment text before posting. Post exactly one final comment. If malformed, delete and repost once.
+
 ## Project-specific skills
 If the project has a `.claude/skills/` directory, load all skills from @.claude/skills/
 
