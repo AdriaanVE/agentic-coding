@@ -11,6 +11,9 @@
 - For multi-line issue/PR/MR comments, write to a temp file and pass via file flag (e.g. `gh issue comment --body-file`, `glab mr comment --body-file`). Never pass multi-line markdown via `--body` in shell.
 - Preview the exact comment text before posting. Post exactly one final comment. If malformed, delete and repost once.
 
+## Documentation placement
+- Before adding anything to MEMORY.md, AGENTS.md, or CLAUDE.md (whether self-initiated or user-requested), first ask: should this live in the project's README.md or AGENTS.md instead? Project-specific conventions, setup instructions, and usage docs belong with the project, not in global config or personal memory.
+
 ## Project-specific skills
 If the project has a `.claude/skills/` directory, load all skills from @.claude/skills/
 
