@@ -129,14 +129,16 @@ For each finding, record:
 - **Severity** (your initial assessment -- will be discussed with user)
 - **Pre-existing?** yes/no
 
-**Codex review (parallel, if available):**
+**Codex review (parallel, MANDATORY):**
 
-Check if Codex is available:
+**Do NOT skip this step.** Always launch Codex for a second opinion, even if you are confident in your own review.
+
+Check if Codex is installed:
 ```bash
 which codex
 ```
 
-If available, launch Codex review in background while you do your own review:
+If not installed, warn the user but continue with your own review. If available, launch Codex review in background while you do your own review:
 
 ```bash
 CODEX_OUT="/tmp/codex-review-$(date +%s)-$$.jsonl"
