@@ -25,18 +25,26 @@ Free-form string describing what Codex should do. If empty, ask the user.
 
 ---
 
+## Execution order
+
+**IMPORTANT: Always launch Codex FIRST, before starting your own work.** Codex runs in the background and takes time. If you are reviewing code, researching, or doing any parallel task, fire off the Codex command immediately, then proceed with your own analysis while Codex works. Do not do your own work first and ask Codex second.
+
+---
+
 ## Steps
 
 ### 1. Determine the Codex command
 
 Always use `codex exec` subcommands with `--json`. These are non-interactive and produce structured JSONL output that pipes reliably. Never use the base `codex "<prompt>"` command — it launches an interactive TUI that hangs in background scripts.
 
+**Always pass `--cd <repo_path>`** with the absolute path to the target repository. Do not rely on inherited Bash cwd. This ensures Codex operates on the correct repo and picks up the right `.codex/config.toml` and project rules. Use `pwd` in a foreground Bash call to resolve the path if needed.
+
 | User intent | Command |
 |---|---|
-| Review branch changes | `codex exec review --base <branch> --json` |
-| Review a specific commit | `codex exec review --commit <sha> --json` |
-| Review uncommitted changes | `codex exec review --uncommitted --json` |
-| General task / question | `codex exec --json "<prompt>"` |
+| Review branch changes | `codex exec --cd <repo> review --base <branch> --json` |
+| Review a specific commit | `codex exec --cd <repo> review --commit <sha> --json` |
+| Review uncommitted changes | `codex exec --cd <repo> review --uncommitted --json` |
+| General task / question | `codex exec --cd <repo> --json "<prompt>"` |
 
 Default base branch for reviews: detect with `git symbolic-ref refs/remotes/origin/HEAD 2>/dev/null | sed 's@^refs/remotes/origin/@@'`, falling back to `main`. If uncertain, ask the user.
 
@@ -44,13 +52,15 @@ Default base branch for reviews: detect with `git symbolic-ref refs/remotes/orig
 
 Run the codex command directly with `run_in_background: true` and `timeout: 360000`. No tmux needed — `codex exec` is non-interactive and the background task notifies on completion.
 
-**You MUST create a unique output file** for each invocation to avoid data races when multiple Codex runs overlap. Use epoch seconds + PID to generate a unique filename:
+**You MUST create a unique output file path before launching Codex** to avoid data races when multiple Codex runs overlap. Allocate the path in a separate **foreground** Bash call using `mktemp`:
 
 ```bash
-CODEX_OUT="/tmp/codex-output-$(date +%s)-$$.jsonl"
+mktemp /tmp/codex-output-XXXXXXXXXX
 ```
 
-**Never reuse a hardcoded filename.** Always generate a fresh unique path.
+Store the returned absolute path (e.g. `/tmp/codex-output-a8K31pQz9L`) in your conversation context. From this point on, use the **literal path** in all subsequent Bash calls. Do not rely on shell variables like `$CODEX_OUT` surviving across calls.
+
+**Never reuse a hardcoded filename.** Always allocate a fresh path with `mktemp`.
 
 Redirect both stdout and stderr to the output file. Codex prints its session banner to stderr; without `2>&1` you lose it and get confusing split output.
 
@@ -60,7 +70,7 @@ If the working directory is **not a git repo**, add `--skip-git-repo-check` to t
 # run_in_background: true
 # timeout: 360000
 
-codex exec review --base main --json > "$CODEX_OUT" 2>&1
+codex exec --cd /path/to/repo review --base main --json > /tmp/codex-output-a8K31pQz9L 2>&1
 ```
 
 **Do not clean up the output file inside this script.** The file is needed for step 4.
@@ -73,7 +83,7 @@ Tell the user Codex is running and the conversation can continue:
 
 ### 4. Collect and parse results
 
-When the background task completes (you'll be notified via task completion notification), read the output file. If notifications are unavailable, poll with `TaskOutput` using `block: false`.
+When the background task completes (you'll be notified via task completion notification), read the output file using the literal path allocated before launch. Do not try to reconstruct it from shell variables, PID, timestamp, or task output. If notifications are unavailable, poll with `TaskOutput` using `block: false`.
 
 The JSONL contains one JSON object per line. Key event types:
 
@@ -93,10 +103,10 @@ The JSONL contains one JSON object per line. Key event types:
 
 ### 5. Clean up
 
-After presenting results:
+After presenting results, remove the output file using the same literal path:
 
 ```bash
-rm -f "$CODEX_OUT"
+rm -f /tmp/codex-output-a8K31pQz9L
 ```
 
 ---
@@ -108,25 +118,31 @@ rm -f "$CODEX_OUT"
 User: "Ask Codex to review this branch"
 
 ```bash
-# Confirm there are commits to review
-git log --oneline main..HEAD
-
-# Unique output file
-CODEX_OUT="/tmp/codex-output-$(date +%s)-$$.jsonl"
-
-# Launch (run_in_background: true, timeout: 360000)
-codex exec review --base main --json > "$CODEX_OUT" 2>&1
+# Step 1: Foreground — allocate unique output path
+mktemp /tmp/codex-output-XXXXXXXXXX
+# Returns e.g.: /tmp/codex-output-a8K31pQz9L
 ```
 
-Then: inform user, wait for notification, read JSONL, extract the last `agent_message`, present findings, clean up.
+```bash
+# Step 2: Background — launch Codex using the literal path
+# run_in_background: true, timeout: 360000
+codex exec --cd /Users/me/Code/my-project review --base main --json > /tmp/codex-output-a8K31pQz9L 2>&1
+```
+
+Then: inform user, wait for notification, Read the literal path, extract the last `agent_message`, present findings, clean up with `rm -f`.
 
 ### General question
 
 User: "Ask Codex to explain the router architecture"
 
 ```bash
-CODEX_OUT="/tmp/codex-output-$(date +%s)-$$.jsonl"
-codex exec --json "Explain the router architecture in this codebase." > "$CODEX_OUT" 2>&1
+mktemp /tmp/codex-output-XXXXXXXXXX
+# Returns: /tmp/codex-output-xQ7r2mN4pB
+```
+
+```bash
+# run_in_background: true, timeout: 360000
+codex exec --cd /Users/me/Code/my-project --json "Explain the router architecture in this codebase." > /tmp/codex-output-xQ7r2mN4pB 2>&1
 ```
 
 ### Implementation task
@@ -134,6 +150,11 @@ codex exec --json "Explain the router architecture in this codebase." > "$CODEX_
 User: "Have Codex add input validation to the router"
 
 ```bash
-CODEX_OUT="/tmp/codex-output-$(date +%s)-$$.jsonl"
-codex exec --json "Add input validation to the router node." > "$CODEX_OUT" 2>&1
+mktemp /tmp/codex-output-XXXXXXXXXX
+# Returns: /tmp/codex-output-kL9w3vR5tJ
+```
+
+```bash
+# run_in_background: true, timeout: 360000
+codex exec --cd /Users/me/Code/my-project --json "Add input validation to the router node." > /tmp/codex-output-kL9w3vR5tJ 2>&1
 ```

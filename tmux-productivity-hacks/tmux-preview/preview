@@ -14,11 +14,13 @@ if [ ! -f "$file" ]; then
   exit 1
 fi
 
+GLOW_STYLE="$HOME/.config/glow/tokyo-night.json"
+
 case "${file##*.}" in
   md|markdown)
-    glow -p "$file"
+    glow -p -s "$GLOW_STYLE" "$file"
     ;;
   *)
-    markitdown "$file" | glow -p
+    markitdown "$file" | glow -p -s "$GLOW_STYLE"
     ;;
 esac

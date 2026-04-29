@@ -49,12 +49,12 @@ Check for uncommitted work:
 git status --porcelain
 ```
 
-If there are uncommitted changes, **ask the user** what to do:
-- **Stash**: `git stash push -u -m "Pre-review stash (review-pr skill)"`
-- **Commit**: ask user for commit message, then stage and commit
-- **Abort**: stop the review
+If there are uncommitted changes, **auto-stash without asking**:
+```bash
+git stash push -u -m "Pre-review stash (review-pr skill)"
+```
 
-Remember the choice for cleanup in step 10.
+Remember that a stash was created for cleanup in step 10.
 
 ### 3. Identify the PR/MR and base branch
 
@@ -78,10 +78,10 @@ Extract and store:
 - `PR_NUMBER` / `MR_NUMBER`
 - `PR_URL` / `MR_URL`
 
-### 4. Checkout the branch locally
+### 4. Checkout the branch locally and sync with remote
 
 ```bash
-git fetch origin <HEAD_BRANCH>
+git fetch origin <HEAD_BRANCH> <BASE_BRANCH>
 ```
 
 Store current branch name for cleanup:
@@ -97,6 +97,11 @@ git checkout <HEAD_BRANCH>
 If the branch doesn't exist locally:
 ```bash
 git checkout -b <HEAD_BRANCH> origin/<HEAD_BRANCH>
+```
+
+**Always pull to sync the local branch with the remote.** Codex diffs the working tree against local HEAD, so if the local branch is behind the remote, Codex reviews the wrong diff:
+```bash
+git pull --ff-only origin <HEAD_BRANCH>
 ```
 
 ### 5. Generate the diff
@@ -143,7 +148,7 @@ If not installed, warn the user but continue with your own review. If available,
 ```bash
 CODEX_OUT="/tmp/codex-review-$(date +%s)-$$.jsonl"
 # For GitHub:
-codex exec review --base <BASE_BRANCH> --json > "$CODEX_OUT" 2>&1
+codex exec review --base origin/<BASE_BRANCH> --json > "$CODEX_OUT" 2>&1
 # run_in_background: true, timeout: 360000
 ```
 
