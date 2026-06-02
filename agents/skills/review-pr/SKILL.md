@@ -127,6 +127,11 @@ Review the diff with these principles:
 4. **Review new abstractions.** Are new classes, patterns, or indirections justified by the scope of change?
 5. **Check test quality.** Do new tests actually test the right things? Are mocks appropriate?
 6. **Flag pre-existing issues separately.** If you notice a pre-existing problem while reviewing, note it but clearly mark it as "pre-existing, not introduced by this PR/MR".
+7. **Zoom out on complex PRs/MRs.** For non-trivial changes (new features, new abstractions, significant refactors), step back from line-level review and assess the change as a whole:
+   - **Cohesion and structure.** Do the new functions/classes have clear, single responsibilities? Is related logic grouped sensibly?
+   - **Fit in the codebase.** Does this follow existing patterns and conventions, or does it introduce a parallel way of doing the same thing? Does it belong where it was placed?
+   - **Is this the best approach?** Consider whether a more elegant, efficient, or simpler design exists. If so, describe it concretely as a non-blocking suggestion rather than a vague "this could be better".
+   - Keep this proportional: skip it for trivial diffs (typo fixes, config bumps, one-line changes).
 
 For each finding, record:
 - **File and line number** (in the new code)
@@ -134,9 +139,9 @@ For each finding, record:
 - **Severity** (your initial assessment -- will be discussed with user)
 - **Pre-existing?** yes/no
 
-**Codex review (parallel, MANDATORY):**
+**Codex review (parallel, MANDATORY, LAUNCH FIRST):**
 
-**Do NOT skip this step.** Always launch Codex for a second opinion, even if you are confident in your own review.
+**Do NOT skip this step.** Always launch Codex for a second opinion, even if you are confident in your own review. **Launch Codex BEFORE starting your own review** so it runs in parallel. Do not do your own analysis first.
 
 Check if Codex is installed:
 ```bash
@@ -234,23 +239,77 @@ rm -f /tmp/pr-review-comment.json
 ```
 
 GitLab (use the discussions API for inline comments):
+
+**CRITICAL: GitLab inline comments require precise diff positioning or they silently fall back to general comments.**
+
+Before posting, you MUST determine the correct position parameters:
+
+1. **Get the diff SHAs** from the MR versions endpoint (do this once per review, cache the values):
+   ```bash
+   glab api projects/<url-encoded-project>/merge_requests/<number>/versions \
+     | python3 -c "
+   import json, sys
+   v = json.load(sys.stdin)[0]
+   print('base_sha:', v['base_commit_sha'])
+   print('head_sha:', v['head_commit_sha'])
+   print('start_sha:', v['start_commit_sha'])
+   "
+   ```
+
+2. **Determine `old_path` and line parameters** based on the file status:
+   - **New file** (entire file is added in the diff):
+     - `old_path` = same as `new_path`
+     - Use `new_line` only (do NOT set `old_line`)
+   - **Modified file** (commenting on an added/changed line):
+     - `old_path` = same as `new_path` (unless file was renamed)
+     - Use `new_line` only for added lines (lines starting with `+` in the diff)
+   - **Modified file** (commenting on a removed line):
+     - Use `old_line` only for removed lines (lines starting with `-` in the diff)
+   - **Renamed file**:
+     - `old_path` = path before rename, `new_path` = path after rename
+
+3. **Verify the target line appears in the diff.** GitLab can only place inline comments on lines that are part of the diff context (added, removed, or context lines shown in the diff hunks). If the line is outside the diff context, post as a general comment instead and mention the file and line number in the body.
+
+4. **Get the correct line number from the diff**, not from the file. Run:
+   ```bash
+   git diff origin/<BASE_BRANCH>...origin/<HEAD_BRANCH> -- <file_path> | grep -n "^[+-]" | head -40
+   ```
+   Cross-reference the diff hunk headers (`@@ -old_start,count +new_start,count @@`) to confirm the `new_line` matches the actual diff position.
+
+**CRITICAL: You MUST use `--input` with `-H "Content-Type: application/json"` and a JSON file. Do NOT use `-f` flags for position fields.** The `-f` flag sends form-encoded data which does not properly nest the `position` object, causing GitLab to silently drop the position and create a general comment instead.
+
 ```bash
-# Write comment to temp file for multi-line safety
-cat > /tmp/mr-comment.md << 'EOF'
-<comment text>
-EOF
-# For inline: use glab api to create a discussion with position
-glab api projects/:id/merge_requests/<number>/discussions \
+# Write the JSON payload to a temp file
+cat > /tmp/mr-inline-comment.json << 'ENDJSON'
+{
+  "body": "<comment text>",
+  "position": {
+    "base_sha": "<base_sha>",
+    "head_sha": "<head_sha>",
+    "start_sha": "<start_sha>",
+    "position_type": "text",
+    "old_path": "<file>",
+    "new_path": "<file>",
+    "new_line": <line_number>
+  }
+}
+ENDJSON
+# Post with JSON content type
+glab api projects/<url-encoded-project>/merge_requests/<number>/discussions \
   --method POST \
-  -f "body=$(cat /tmp/mr-comment.md)" \
-  -f "position[base_sha]=<base_sha>" \
-  -f "position[head_sha]=<head_sha>" \
-  -f "position[start_sha]=<start_sha>" \
-  -f "position[position_type]=text" \
-  -f "position[new_path]=<file>" \
-  -f "position[new_line]=<line>"
-rm -f /tmp/mr-comment.md
+  --input /tmp/mr-inline-comment.json \
+  -H "Content-Type: application/json"
+rm -f /tmp/mr-inline-comment.json
 ```
+
+**Verify the response:** The note `type` must be `"DiffNote"`. If it is `"DiscussionNote"`, the position was silently dropped and it landed as a general comment.
+
+**Common mistakes that cause inline comments to land as general comments:**
+- Using `-f` flags instead of `--input` with JSON (the #1 cause)
+- Missing `old_path` (required even for new files)
+- Using a line number that is outside the diff hunks
+- Wrong SHAs (always fetch from the versions endpoint, never compute manually)
+- Using `new_line` for a deleted line (use `old_line` instead)
 
 **Posting general comments:**
 
