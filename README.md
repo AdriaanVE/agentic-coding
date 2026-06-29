@@ -11,6 +11,7 @@ Custom skills for AI coding agents.
 - **ask-codex**: Delegate tasks to OpenAI Codex asynchronously. Run code reviews, ask questions, or launch implementation tasks in the background while continuing your conversation.
 - **ask-claude**: Delegate tasks to a separate Claude Code instance asynchronously. Runs `claude -p` with `stream-json` output in the background for crash-resilient JSONL capture. Designed for Codex users who want a headless Claude sidecar.
 - **brain**: Interact with a personal Obsidian knowledge base (`~/Brain`). Look up, create, and update notes using vault conventions and templates.
+- **jira-ticket**: Draft the body text of a Jira ticket from provided context, following a fixed user-story layout (Title / As a / I would like / In order to / Context / Acceptance Criteria / Blocked by). Outputs copy-paste text only.
 - **preview**: Send files or diffs to a tmux preview pane. Automatically shows `git diff` after edits and renders `.md`, `.docx`, `.xlsx`, `.pdf`, `.pptx` files. See [`tmux-preview/`](tmux-productivity-hacks/tmux-preview/) for the full setup.
 - **review-pr**: Review pull requests or merge requests with a structured, diff-focused workflow.
 - **socratic-spec-interview**: Turn rough feature ideas into clearer implementation specs through a Socratic interview flow.

@@ -81,6 +81,8 @@ Tell the user Codex is running and the conversation can continue:
 
 > "Codex is working on that in the background. I'll share the results when it's done — we can keep going in the meantime."
 
+**CRITICAL: Do NOT touch the output file until the completion notification arrives.** Do not read it, do not parse it, do not delete it, do not draw conclusions from partial contents. Codex writes results incrementally; the `agent_message` (the actual answer) is emitted last. Reading early will show only `command_execution` items, which looks like Codex produced no answer, tempting you to clean up and re-run. Wait for the notification.
+
 ### 4. Collect and parse results
 
 When the background task completes (you'll be notified via task completion notification), read the output file using the literal path allocated before launch. Do not try to reconstruct it from shell variables, PID, timestamp, or task output. If notifications are unavailable, poll with `TaskOutput` using `block: false`.
@@ -95,11 +97,28 @@ The JSONL contains one JSON object per line. Key event types:
 | `error` | Errors or reconnections (e.g. `"stream disconnected"`). | Note if the final answer is missing; Codex may have recovered and continued. |
 
 **Parsing approach:**
-1. Find all lines containing `"type":"agent_message"` — use the **last** one as the final answer (Codex may emit multiple during streaming)
-2. Extract the `text` field from that JSON object
-3. Present it clearly to the user
-4. If no `agent_message` found, check for `error` events and report what happened
-5. If the task failed and the output indicates codex was not found, run `which codex` to diagnose and inform the user
+
+JSONL lines can be malformed (extra data, empty lines, stderr mixed in). Always wrap `json.loads` in a try/except per line and skip unparseable lines:
+
+```python
+import json
+results = []
+with open(output_path) as f:
+    for line in f:
+        try:
+            obj = json.loads(line.strip())
+        except (json.JSONDecodeError, ValueError):
+            continue
+        if obj.get('type') == 'item.completed' and obj.get('item', {}).get('type') == 'agent_message':
+            results.append(obj['item']['text'])
+final_answer = results[-1] if results else None
+```
+
+Key details:
+- The final answer is in `item.text` (not `item.content[].output_text`)
+- Use the **last** `agent_message` (Codex may emit multiple during streaming)
+- If no `agent_message` found, check for `error` events and report what happened
+- If the task failed and the output indicates codex was not found, run `which codex` to diagnose and inform the user
 
 ### 5. Clean up
 

@@ -1,6 +1,6 @@
 ---
 name: preview
-description: Send files or diffs to the tmux preview pane. Use when the user asks to preview a file, diff, or any output in the side pane.
+description: Send files or diffs to the tmux preview pane. TRIGGER when: the user says "preview" in the context of viewing files, diffs, or command output. DO NOT TRIGGER when: the user asks to "show", "display", or "read" without using the word "preview".
 ---
 
 # Preview — tmux preview pane
